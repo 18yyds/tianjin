@@ -1,0 +1,2059 @@
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>津城智慧旅游 - 天津经济旅游攻略平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 高德地图API -->
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&amp;key=YOUR_AMAP_KEY"></script>
+    <!-- Three.js用于AR预览 -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { 
+                colors: { primary: '#165DFF', secondary: '#FF6B35', light: '#F5F7FA' },
+                fontFamily: { sans: ['Microsoft YaHei', 'sans-serif'] }
+            } }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .card { @apply bg-white rounded-lg shadow-md hover:-translate-y-1 transition-all duration-300; }
+            .title { @apply text-2xl md:text-3xl font-bold text-center mb-2; }
+            .subtitle { @apply text-gray-600 text-center mb-8; }
+            .nav-link { @apply hover:text-primary transition-colors duration-300; }
+            .btn-primary { @apply bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-full font-medium inline-flex items-center gap-2 transition-all; }
+            .btn-secondary { @apply bg-secondary hover:bg-secondary/90 text-white px-6 py-3 rounded-full font-medium inline-flex items-center gap-2 transition-all; }
+            .tag { @apply text-xs bg-primary/10 text-primary px-2 py-1 rounded; }
+        }
+    </style>
+</head>
+
+<body class="bg-light text-gray-800 scroll-smooth">
+    <!-- 顶部天气栏 -->
+    <div id="weatherBar" class="bg-white py-2 px-4 shadow-sm hidden md:block">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i id="weatherIcon" class="fa-solid fa-sun text-yellow-500 text-xl"></i>
+                <span id="weatherInfo" class="text-sm">天津 晴 22°C</span>
+            </div>
+            <div class="text-sm text-gray-600">
+                <span id="currentDate">2025年4月21日 星期一</span>
+            </div>
+        </div>
+    </div>
+
+    <header class="sticky top-0 z-50 bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-city text-primary text-2xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">津城智慧旅游</h1>
+            </div>
+            <nav class="hidden md:flex gap-6">
+                <a href="#home" class="nav-link">首页</a>
+                <a href="#scenic" class="nav-link">特色景点</a>
+                <a href="#food" class="nav-link">天津美食</a>
+                <a href="#hotel" class="nav-link">经济住宿</a>
+                <a href="#custom" class="nav-link">定制方案</a>
+                <a href="#comments" class="nav-link">用户评价</a>
+            </nav>
+            <button id="menuBtn" class="md:hidden text-xl cursor-pointer"><i class="fa-solid fa-bars"></i></button>
+        </div>
+        <div id="mobileMenu" class="hidden md:hidden bg-white px-4 py-2 shadow-sm">
+            <nav class="flex flex-col gap-3 pb-3">
+                <a href="#home" class="nav-link mobile-link">首页</a>
+                <a href="#scenic" class="nav-link mobile-link">特色景点</a>
+                <a href="#food" class="nav-link mobile-link">天津美食</a>
+                <a href="#hotel" class="nav-link mobile-link">经济住宿</a>
+                <a href="#custom" class="nav-link mobile-link">定制方案</a>
+                <a href="#comments" class="nav-link mobile-link">用户评价</a>
+            </nav>
+        </div>
+    </header>
+
+    <section id="home" class="relative h-[50vh] md:h-[70vh] flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://p26-doubao-search-sign.byteimg.com/tos-cn-i-be4g95zd3a/1037882824283521031~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&amp;x-expires=1792326791&amp;x-signature=AomfJ%2BDvX3I8zoh0TAg1h0GO7GU%3D'); filter: brightness(0.7);"></div>
+        <div class="relative container px-4 text-center text-white">
+            <h2 class="text-[clamp(2rem,5vw,3.5rem)] font-bold drop-shadow-md mb-4">津门故里 · 智慧畅游</h2>
+            <p class="text-[clamp(1rem,2vw,1.3rem)] drop-shadow-md max-w-2xl mx-auto mb-6">专注天津经济旅游攻略 | 免费个性化方案定制</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#custom" class="btn-primary">
+                    <i class="fa-solid fa-map-location-dot"></i> 立即定制专属方案
+                </a>
+                <a href="#scenic" class="bg-white hover:bg-gray-100 text-primary px-6 py-3 rounded-full font-medium inline-flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-compass"></i> 探索热门景点
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <main class="container mx-auto px-4 py-12">
+        <!-- AI推荐模块 -->
+        <section id="ai-recommend" class="mb-16">
+            <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-6 md:p-8">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="md:w-1/2">
+                        <h3 class="text-2xl md:text-3xl font-bold mb-3">AI智能旅游助手</h3>
+                        <p class="text-gray-700 mb-4">基于您的兴趣和偏好，智能推荐最适合的天津旅游路线。实时天气、交通状况、人流量预测，让您的旅行更加便捷、舒适。</p>
+                        <div class="flex flex-wrap gap-3 mb-6">
+                            <span class="bg-white px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                                <i class="fa-solid fa-route text-primary"></i> 智能路线规划
+                            </span>
+                            <span class="bg-white px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                                <i class="fa-solid fa-cloud-sun text-primary"></i> 实时天气查询
+                            </span>
+                            <span class="bg-white px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                                <i class="fa-solid fa-location-dot text-primary"></i> 地图导航
+                            </span>
+                            <span class="bg-white px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                                <i class="fa-solid fa-users text-primary"></i> 人流量预测
+                            </span>
+                        </div>
+                        <a href="#custom" class="btn-secondary">
+                            <i class="fa-solid fa-magic"></i> 获取AI推荐
+                        </a>
+                    </div>
+                    <div class="md:w-1/2">
+                        <div class="bg-white rounded-xl shadow-lg p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="font-bold text-lg">今日热门路线</h4>
+                                <span class="text-xs text-gray-500">数据更新于 10:30</span>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3 p-3 bg-light rounded-lg hover:bg-primary/5 transition-colors cursor-pointer">
+                                    <div class="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">1</div>
+                                    <div class="flex-1">
+                                        <h5 class="font-medium">经典文化线</h5>
+                                        <p class="text-xs text-gray-600">古文化街 → 意式风情区 → 五大道</p>
+                                    </div>
+                                    <div class="text-xs text-green-600">
+                                        <i class="fa-solid fa-arrow-trend-up"></i> 热度上升
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3 p-3 bg-light rounded-lg hover:bg-primary/5 transition-colors cursor-pointer">
+                                    <div class="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">2</div>
+                                    <div class="flex-1">
+                                        <h5 class="font-medium">地标打卡线</h5>
+                                        <p class="text-xs text-gray-600">天津之眼 → 瓷房子 → 天津塔</p>
+                                    </div>
+                                    <div class="text-xs text-blue-600">
+                                        <i class="fa-solid fa-person-walking"></i> 适合步行
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3 p-3 bg-light rounded-lg hover:bg-primary/5 transition-colors cursor-pointer">
+                                    <div class="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">3</div>
+                                    <div class="flex-1">
+                                        <h5 class="font-medium">美食探索线</h5>
+                                        <p class="text-xs text-gray-600">南市食品街 → 辽宁路小吃街</p>
+                                    </div>
+                                    <div class="text-xs text-yellow-600">
+                                        <i class="fa-solid fa-utensils"></i> 美食推荐
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="scenic" class="mb-16">
+            <h3 class="title">天津特色景点</h3>
+            <p class="subtitle">津门经典打卡地，含详细介绍+交通攻略</p>
+            
+            <!-- 景点筛选器 -->
+            <div class="mb-8 flex flex-wrap gap-3 justify-center">
+                <button class="filter-btn active bg-primary text-white px-4 py-2 rounded-full text-sm" data-filter="all">全部景点</button>
+                <button class="filter-btn bg-white text-gray-700 px-4 py-2 rounded-full text-sm hover:bg-primary/10" data-filter="city">城市地标</button>
+                <button class="filter-btn bg-white text-gray-700 px-4 py-2 rounded-full text-sm hover:bg-primary/10" data-filter="culture">文化古迹</button>
+                <button class="filter-btn bg-white text-gray-700 px-4 py-2 rounded-full text-sm hover:bg-primary/10" data-filter="nature">自然风光</button>
+                <button class="filter-btn bg-white text-gray-700 px-4 py-2 rounded-full text-sm hover:bg-primary/10" data-filter="food">美食街区</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="attractionsGrid">
+                <!-- 景点卡片1 -->
+                <div class="card overflow-hidden attraction-card" data-category="city">
+                    <div class="relative">
+                        <img loading="lazy" src="https://p26-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/46da87d78c1f4affb47e0f03fb409b80~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=2026042120341676A67775688DDD16F905&amp;rrcfp=e75484ac&amp;x-expires=1777379657&amp;x-signature=iWJMYe4Hpru9gOdQAsfB%2FQUsdWQ%3D" alt="天津之眼夜景" class="w-full h-48 object-cover">
+                        <div class="absolute top-2 right-2 bg-white/80 backdrop-blur-sm px-2 py-1 rounded text-xs flex items-center gap-1">
+                            <i class="fa-solid fa-sun text-yellow-500"></i>
+                            <span id="weather-tianjin-eye">晴 22°C</span>
+                        </div>
+                        <button class="ar-preview-btn absolute bottom-2 right-2 bg-primary/80 text-white p-2 rounded-full hover:bg-primary transition-colors" data-attraction="tianjin-eye">
+                            <i class="fa-solid fa-vr-cardboard"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-ferris-wheel text-primary"></i> 天津之眼</h4>
+                            <div class="flex items-center">
+                                <i class="fa-solid fa-star text-yellow-400"></i>
+                                <span class="text-sm font-medium ml-1">4.8</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3">世界唯一建在桥上的摩天轮，天津地标性建筑，俯瞰津城全景绝佳位置</p>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <span class="tag">必打卡</span>
+                            <span class="tag">地标</span>
+                            <span class="tag">夜景</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-2">
+                            <i class="fa-solid fa-clock text-primary mr-2"></i>
+                            <span>开放时间: 09:30-21:30</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-2">
+                            <i class="fa-solid fa-ticket text-primary mr-2"></i>
+                            <span>门票: ¥80/人</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-4">
+                            <i class="fa-solid fa-bus-simple text-primary mr-2"></i>
+                            <span>交通: 地铁1号线西北角站步行15分钟</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="view-map-btn flex-1 bg-primary/10 hover:bg-primary/20 text-primary py-2 rounded-lg text-sm transition-colors" data-lat="39.1310" data-lng="117.1906" data-name="天津之眼">
+                                <i class="fa-solid fa-map-location-dot mr-1"></i> 查看地图
+                            </button>
+                            <button class="view-comments-btn flex-1 bg-secondary/10 hover:bg-secondary/20 text-secondary py-2 rounded-lg text-sm transition-colors" data-attraction="tianjin-eye">
+                                <i class="fa-solid fa-comment mr-1"></i> 用户评价
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 景点卡片2 -->
+                <div class="card overflow-hidden attraction-card" data-category="culture">
+                    <div class="relative">
+                        <img loading="lazy" src="https://p26-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/2382af8dfc964ffcb9e163ef8b29af30~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=20260421205011CC3A91D71ED0BC184CEA&amp;rrcfp=e75484ac&amp;x-expires=1777380612&amp;x-signature=%2BvDTC%2FClcdrdgUVLibzCBpahE7g%3D" alt="五大道" class="w-full h-48 object-cover">
+                        <div class="absolute top-2 right-2 bg-white/80 backdrop-blur-sm px-2 py-1 rounded text-xs flex items-center gap-1">
+                            <i class="fa-solid fa-cloud text-gray-500"></i>
+                            <span id="weather-wudadao">多云 20°C</span>
+                        </div>
+                        <button class="ar-preview-btn absolute bottom-2 right-2 bg-primary/80 text-white p-2 rounded-full hover:bg-primary transition-colors" data-attraction="wudadao">
+                            <i class="fa-solid fa-vr-cardboard"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-house-chimney text-primary"></i> 五大道</h4>
+                            <div class="flex items-center">
+                                <i class="fa-solid fa-star text-yellow-400"></i>
+                                <span class="text-sm font-medium ml-1">4.7</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3">保存最完整的洋楼建筑群，2000多栋欧式建筑，漫步感受民国风情</p>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <span class="tag">免费逛</span>
+                            <span class="tag">欧式建筑</span>
+                            <span class="tag">拍照胜地</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-2">
+                            <i class="fa-solid fa-clock text-primary mr-2"></i>
+                            <span>开放时间: 全天开放</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-2">
+                            <i class="fa-solid fa-ticket text-primary mr-2"></i>
+                            <span>门票: 免费</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-4">
+                            <i class="fa-solid fa-bus-simple text-primary mr-2"></i>
+                            <span>交通: 地铁1号线小白楼站直达</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="view-map-btn flex-1 bg-primary/10 hover:bg-primary/20 text-primary py-2 rounded-lg text-sm transition-colors" data-lat="39.0846" data-lng="117.2131" data-name="五大道">
+                                <i class="fa-solid fa-map-location-dot mr-1"></i> 查看地图
+                            </button>
+                            <button class="view-comments-btn flex-1 bg-secondary/10 hover:bg-secondary/20 text-secondary py-2 rounded-lg text-sm transition-colors" data-attraction="wudadao">
+                                <i class="fa-solid fa-comment mr-1"></i> 用户评价
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 景点卡片3 -->
+                <div class="card overflow-hidden attraction-card" data-category="culture">
+                    <div class="relative">
+                        <img loading="lazy" src="https://p11-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/f855c5745e8343ba97cbcd5da30d0220~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=2026042120503414B29D6F2A5D2F1919DA&amp;rrcfp=e75484ac&amp;x-expires=1777380635&amp;x-signature=GGA9RSWjnjLEGhUBD4heW%2F4D0Zs%3D" alt="古文化街" class="w-full h-48 object-cover">
+                        <div class="absolute top-2 right-2 bg-white/80 backdrop-blur-sm px-2 py-1 rounded text-xs flex items-center gap-1">
+                            <i class="fa-solid fa-sun text-yellow-500"></i>
+                            <span id="weather-guculture">晴 23°C</span>
+                        </div>
+                        <button class="ar-preview-btn absolute bottom-2 right-2 bg-primary/80 text-white p-2 rounded-full hover:bg-primary transition-colors" data-attraction="guculture">
+                            <i class="fa-solid fa-vr-cardboard"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-archway text-primary"></i> 古文化街</h4>
+                            <div class="flex items-center">
+                                <i class="fa-solid fa-star text-yellow-400"></i>
+                                <span class="text-sm font-medium ml-1">4.6</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3">津门十景之一，感受天津民俗文化，逛老字号、买非遗手工艺品</p>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <span class="tag">民俗风</span>
+                            <span class="tag">文化街</span>
+                            <span class="tag">购物</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-2">
+                            <i class="fa-solid fa-clock text-primary mr-2"></i>
+                            <span>开放时间: 09:00-22:00</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-2">
+                            <i class="fa-solid fa-ticket text-primary mr-2"></i>
+                            <span>门票: 免费</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-4">
+                            <i class="fa-solid fa-bus-simple text-primary mr-2"></i>
+                            <span>交通: 地铁2号线东南角站步行5分钟</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="view-map-btn flex-1 bg-primary/10 hover:bg-primary/20 text-primary py-2 rounded-lg text-sm transition-colors" data-lat="39.1218" data-lng="117.2161" data-name="古文化街">
+                                <i class="fa-solid fa-map-location-dot mr-1"></i> 查看地图
+                            </button>
+                            <button class="view-comments-btn flex-1 bg-secondary/10 hover:bg-secondary/20 text-secondary py-2 rounded-lg text-sm transition-colors" data-attraction="guculture">
+                                <i class="fa-solid fa-comment mr-1"></i> 用户评价
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 景点卡片4 -->
+                <div class="card overflow-hidden attraction-card" data-category="city">
+                    <div class="relative">
+                        <img loading="lazy" src="https://p26-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/b11cc1a5c76042909d57bc94d9735fcc~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=2026042120515134FD262413C21A1819CD&amp;rrcfp=e75484ac&amp;x-expires=1777380711&amp;x-signature=ZiYS%2B8%2BrVh97%2B0nwUNdJg7MGDTU%3D" alt="意式风情区" class="w-full h-48 object-cover">
+                        <div class="absolute top-2 right-2 bg-white/80 backdrop-blur-sm px-2 py-1 rounded text-xs flex items-center gap-1">
+                            <i class="fa-solid fa-sun text-yellow-500"></i>
+                            <span id="weather-italian">晴 22°C</span>
+                        </div>
+                        <button class="ar-preview-btn absolute bottom-2 right-2 bg-primary/80 text-white p-2 rounded-full hover:bg-primary transition-colors" data-attraction="italian">
+                            <i class="fa-solid fa-vr-cardboard"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-building-columns text-primary"></i> 意式风情区</h4>
+                            <div class="flex items-center">
+                                <i class="fa-solid fa-star text-yellow-400"></i>
+                                <span class="text-sm font-medium ml-1">4.5</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3">亚洲唯一意大利风格建筑群，网红打卡、拍照出片圣地</p>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <span class="tag">网红地</span>
+                            <span class="tag">欧式建筑</span>
+                            <span class="tag">拍照</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-2">
+                            <i class="fa-solid fa-clock text-primary mr-2"></i>
+                            <span>开放时间: 全天开放</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-2">
+                            <i class="fa-solid fa-ticket text-primary mr-2"></i>
+                            <span>门票: 免费</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-4">
+                            <i class="fa-solid fa-bus-simple text-primary mr-2"></i>
+                            <span>交通: 地铁3号线和平路站步行8分钟</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="view-map-btn flex-1 bg-primary/10 hover:bg-primary/20 text-primary py-2 rounded-lg text-sm transition-colors" data-lat="39.1269" data-lng="117.2197" data-name="意式风情区">
+                                <i class="fa-solid fa-map-location-dot mr-1"></i> 查看地图
+                            </button>
+                            <button class="view-comments-btn flex-1 bg-secondary/10 hover:bg-secondary/20 text-secondary py-2 rounded-lg text-sm transition-colors" data-attraction="italian">
+                                <i class="fa-solid fa-comment mr-1"></i> 用户评价
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 景点卡片5 -->
+                <div class="card overflow-hidden attraction-card" data-category="nature">
+                    <div class="relative">
+                        <img loading="lazy" src="https://p26-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/4c472cc58fb940ca9cba18f004db52c5~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=20260421205201BFFC97A15B49A41285C2&amp;rrcfp=e75484ac&amp;x-expires=1777380722&amp;x-signature=Nf0QWWD9TT%2B8V8J0z3S9Zd%2FcRCM%3D" alt="盘山" class="w-full h-48 object-cover">
+                        <div class="absolute top-2 right-2 bg-white/80 backdrop-blur-sm px-2 py-1 rounded text-xs flex items-center gap-1">
+                            <i class="fa-solid fa-cloud-rain text-blue-500"></i>
+                            <span id="weather-panshan">小雨 18°C</span>
+                        </div>
+                        <button class="ar-preview-btn absolute bottom-2 right-2 bg-primary/80 text-white p-2 rounded-full hover:bg-primary transition-colors" data-attraction="panshan">
+                            <i class="fa-solid fa-vr-cardboard"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-mountain-sun text-primary"></i> 盘山</h4>
+                            <div class="flex items-center">
+                                <i class="fa-solid fa-star text-yellow-400"></i>
+                                <span class="text-sm font-medium ml-1">4.7</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3">京东第一山，自然风景与人文古迹结合，乾隆曾32次游历此地</p>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <span class="tag">自然景</span>
+                            <span class="tag">爬山</span>
+                            <span class="tag">文化古迹</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-2">
+                            <i class="fa-solid fa-clock text-primary mr-2"></i>
+                            <span>开放时间: 08:00-17:00</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-2">
+                            <i class="fa-solid fa-ticket text-primary mr-2"></i>
+                            <span>门票: ¥100/人</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-4">
+                            <i class="fa-solid fa-bus-simple text-primary mr-2"></i>
+                            <span>交通: 天津站旅游专线14路直达</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="view-map-btn flex-1 bg-primary/10 hover:bg-primary/20 text-primary py-2 rounded-lg text-sm transition-colors" data-lat="40.0506" data-lng="117.3474" data-name="盘山">
+                                <i class="fa-solid fa-map-location-dot mr-1"></i> 查看地图
+                            </button>
+                            <button class="view-comments-btn flex-1 bg-secondary/10 hover:bg-secondary/20 text-secondary py-2 rounded-lg text-sm transition-colors" data-attraction="panshan">
+                                <i class="fa-solid fa-comment mr-1"></i> 用户评价
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 景点卡片6 -->
+                <div class="card overflow-hidden attraction-card" data-category="city">
+                    <div class="relative">
+                        <img loading="lazy" src="https://p26-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/875cff5224034e55bc2c4b1b956e2d7a~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=20260421205211EA00BCF8D6F46F1474F9&amp;rrcfp=e75484ac&amp;x-expires=1777380732&amp;x-signature=nd2Y%2FSetT7wwM0f4FxXu3o%2Flg9k%3D" alt="瓷房子" class="w-full h-48 object-cover">
+                        <div class="absolute top-2 right-2 bg-white/80 backdrop-blur-sm px-2 py-1 rounded text-xs flex items-center gap-1">
+                            <i class="fa-solid fa-sun text-yellow-500"></i>
+                            <span id="weather-ceramic">晴 22°C</span>
+                        </div>
+                        <button class="ar-preview-btn absolute bottom-2 right-2 bg-primary/80 text-white p-2 rounded-full hover:bg-primary transition-colors" data-attraction="ceramic">
+                            <i class="fa-solid fa-vr-cardboard"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-palette text-primary"></i> 瓷房子</h4>
+                            <div class="flex items-center">
+                                <i class="fa-solid fa-star text-yellow-400"></i>
+                                <span class="text-sm font-medium ml-1">4.4</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3">用4亿片古瓷建造的法式洋楼，中国古瓷博物馆，独一无二的建筑奇观</p>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <span class="tag">奇观</span>
+                            <span class="tag">博物馆</span>
+                            <span class="tag">艺术</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-2">
+                            <i class="fa-solid fa-clock text-primary mr-2"></i>
+                            <span>开放时间: 09:00-18:00</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-2">
+                            <i class="fa-solid fa-ticket text-primary mr-2"></i>
+                            <span>门票: ¥50/人</span>
+                        </div>
+                        <div class="flex items-center text-sm mb-4">
+                            <i class="fa-solid fa-bus-simple text-primary mr-2"></i>
+                            <span>交通: 地铁3号线和平路站步行3分钟</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="view-map-btn flex-1 bg-primary/10 hover:bg-primary/20 text-primary py-2 rounded-lg text-sm transition-colors" data-lat="39.1198" data-lng="117.2183" data-name="瓷房子">
+                                <i class="fa-solid fa-map-location-dot mr-1"></i> 查看地图
+                            </button>
+                            <button class="view-comments-btn flex-1 bg-secondary/10 hover:bg-secondary/20 text-secondary py-2 rounded-lg text-sm transition-colors" data-attraction="ceramic">
+                                <i class="fa-solid fa-comment mr-1"></i> 用户评价
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="food" class="mb-16">
+            <h3 class="title">天津特色美食</h3>
+            <p class="subtitle">地道津味小吃，经济实惠，本地人推荐</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div class="card p-4 text-center">
+                    <div class="relative w-24 h-24 mx-auto mb-3">
+                        <img loading="lazy" src="https://p26-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/35722a459e114311a859ece245261040~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=20260421205224B3DF11E5A14E6B187FE2&amp;rrcfp=e75484ac&amp;x-expires=1777380745&amp;x-signature=QDpxu12dnCOlNHSChrXkhsGawiQ%3D" alt="天津煎饼果子" class="w-full h-full object-cover rounded-full">
+                        <div class="absolute -top-2 -right-2 bg-secondary text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
+                            <i class="fa-solid fa-crown"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-lg font-bold">天津煎饼果子</h4>
+                    <div class="flex items-center justify-center my-1">
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                    </div>
+                    <p class="text-primary font-medium">¥5-8元/套</p>
+                    <p class="text-xs text-gray-600 mt-1">推荐: 老味煎饼果子(南市店)</p>
+                </div>
+                <div class="card p-4 text-center">
+                    <div class="w-24 h-24 mx-auto mb-3">
+                        <img loading="lazy" src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/27103e4608fe41f2817e348f3ac8c5bc~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=2026042120523331E21A40F27EC417FE4B&amp;rrcfp=e75484ac&amp;x-expires=1777380754&amp;x-signature=vDKtefL3%2BFoOqH7jJCe85pAsS7A%3D" alt="嘎巴菜" class="w-full h-full object-cover rounded-full">
+                    </div>
+                    <h4 class="text-lg font-bold">嘎巴菜</h4>
+                    <div class="flex items-center justify-center my-1">
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                        <i class="fa-solid fa-star-half-stroke text-yellow-400 text-xs"></i>
+                    </div>
+                    <p class="text-primary font-medium">¥6-10元/碗</p>
+                    <p class="text-xs text-gray-600 mt-1">推荐: 大福来(西北角店)</p>
+                </div>
+                <div class="card p-4 text-center">
+                    <div class="w-24 h-24 mx-auto mb-3">
+                        <img loading="lazy" src="https://p11-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/f7659f81239b4bd2be5bebb4b89f77f7~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=202604212052417896D7296FA85E19AFBC&amp;rrcfp=e75484ac&amp;x-expires=1777380762&amp;x-signature=Ofih9KtzuOw7Aqix52gAExi6yKw%3D" alt="耳朵眼炸糕" class="w-full h-full object-cover rounded-full">
+                    </div>
+                    <h4 class="text-lg font-bold">耳朵眼炸糕</h4>
+                    <div class="flex items-center justify-center my-1">
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                        <i class="fa-solid fa-star text-gray-300 text-xs"></i>
+                    </div>
+                    <p class="text-primary font-medium">¥3-5元/个</p>
+                    <p class="text-xs text-gray-600 mt-1">推荐: 耳朵眼炸糕店(古文化街店)</p>
+                </div>
+                <div class="card p-4 text-center">
+                    <div class="w-24 h-24 mx-auto mb-3">
+                        <img loading="lazy" src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/8f73102d600e4afb8ad40d29d5077778~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=20260421205250BAE2D2FA4516FB127BF2&amp;rrcfp=e75484ac&amp;x-expires=1777380772&amp;x-signature=l7IYv60VyB0S8xFAFxwsO2VMoFc%3D" alt="十八街麻花" class="w-full h-full object-cover rounded-full">
+                    </div>
+                    <h4 class="text-lg font-bold">十八街麻花</h4>
+                    <div class="flex items-center justify-center my-1">
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                        <i class="fa-solid fa-star-half-stroke text-yellow-400 text-xs"></i>
+                    </div>
+                    <p class="text-primary font-medium">¥15-25元/根</p>
+                    <p class="text-xs text-gray-600 mt-1">推荐: 桂发祥十八街麻花(总店)</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="hotel" class="mb-16">
+            <h3 class="title">天津经济住宿</h3>
+            <p class="subtitle">高性价比住宿参考，价格透明，按需选择</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card p-5 border-l-4 border-primary">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-lg font-bold">经济型青年旅舍</h4>
+                        <span class="text-primary font-bold">¥50-90/晚</span>
+                    </div>
+                    <ul class="text-sm text-gray-600 space-y-2 mb-4">
+                        <li><i class="fa-solid fa-check text-green-500"></i> 床位房，适合单人出行</li>
+                        <li><i class="fa-solid fa-check text-green-500"></i> 近地铁/景点，交通便利</li>
+                        <li><i class="fa-solid fa-check text-green-500"></i> 公共区域，社交氛围好</li>
+                    </ul>
+                    <div class="flex items-center justify-between text-xs text-gray-500">
+                        <span>推荐指数: ★★★★☆</span>
+                        <span>热门区域: 南市、滨江道</span>
+                    </div>
+                </div>
+                <div class="card p-5 border-l-4 border-primary">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-lg font-bold">连锁快捷酒店</h4>
+                        <span class="text-primary font-bold">¥100-180/晚</span>
+                    </div>
+                    <ul class="text-sm text-gray-600 space-y-2 mb-4">
+                        <li><i class="fa-solid fa-check text-green-500"></i> 独立单间，干净卫生</li>
+                        <li><i class="fa-solid fa-check text-green-500"></i> 独立卫浴，24小时热水</li>
+                        <li><i class="fa-solid fa-check text-green-500"></i> 性价比高，服务标准</li>
+                    </ul>
+                    <div class="flex items-center justify-between text-xs text-gray-500">
+                        <span>推荐指数: ★★★★★</span>
+                        <span>热门区域: 和平路、天津站</span>
+                    </div>
+                </div>
+                <div class="card p-5 border-l-4 border-primary">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-lg font-bold">品质舒适酒店</h4>
+                        <span class="text-primary font-bold">¥180-300/晚</span>
+                    </div>
+                    <ul class="text-sm text-gray-600 space-y-2 mb-4">
+                        <li><i class="fa-solid fa-check text-green-500"></i> 星级标准，环境舒适</li>
+                        <li><i class="fa-solid fa-check text-green-500"></i> 含早餐，服务完善</li>
+                        <li><i class="fa-solid fa-check text-green-500"></i> 设施齐全，安静宜居</li>
+                    </ul>
+                    <div class="flex items-center justify-between text-xs text-gray-500">
+                        <span>推荐指数: ★★★★☆</span>
+                        <span>热门区域: 五大道、小白楼</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="custom" class="mb-16">
+            <h3 class="title">AI个性化旅游方案定制</h3>
+            <p class="subtitle">填写信息，免费生成专属天津经济旅游攻略</p>
+            <div class="max-w-3xl mx-auto card p-6 md:p-8">
+                <form id="customForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium mb-1">出行人数</label><select id="people" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/50 outline-none"><option>1人</option><option>2人</option><option>3-4人</option><option>5人以上</option></select></div>
+                    <div><label class="block text-sm font-medium mb-1">出行天数</label><select id="days" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/50 outline-none"><option>1日游</option><option>2日游</option><option>3日游</option><option>4日以上</option></select></div>
+                    <div><label class="block text-sm font-medium mb-1">人均预算</label><select id="budget" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/50 outline-none"><option>200元以内</option><option>200-500元</option><option>500-800元</option><option>800元以上</option></select></div>
+                    <div><label class="block text-sm font-medium mb-1">出行偏好</label><select id="like" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/50 outline-none"><option>景点打卡</option><option>美食探店</option><option>休闲慢游</option><option>亲子游玩</option></select></div>
+                    <div class="md:col-span-2"><label class="block text-sm font-medium mb-1">出行方式</label><select id="way" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/50 outline-none"><option>公共交通（地铁/公交）</option><option>骑行+步行</option><option>自驾</option><option>打车/网约车</option></select></div>
+                    
+                    <!-- 新增AI偏好选项 -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium mb-1">景点类型偏好 (可多选)</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <label class="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-primary/5">
+                                <input type="checkbox" class="mr-2" value="city" checked="">
+                                <span class="text-sm">城市地标</span>
+                            </label>
+                            <label class="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-primary/5">
+                                <input type="checkbox" class="mr-2" value="culture" checked="">
+                                <span class="text-sm">文化古迹</span>
+                            </label>
+                            <label class="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-primary/5">
+                                <input type="checkbox" class="mr-2" value="nature">
+                                <span class="text-sm">自然风光</span>
+                            </label>
+                            <label class="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-primary/5">
+                                <input type="checkbox" class="mr-2" value="food">
+                                <span class="text-sm">美食街区</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium mb-1">特殊需求</label>
+                        <textarea class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/50 outline-none" rows="2" placeholder="请输入您的特殊需求，如无障碍设施、儿童友好、摄影偏好等..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="md:col-span-2 bg-primary hover:bg-primary/90 text-white py-3 rounded-lg font-medium transition-all cursor-pointer flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-magic"></i> AI生成专属旅游方案
+                    </button>
+                </form>
+
+                <div id="planResult" class="hidden bg-light rounded-lg p-5 border-l-4 border-secondary mt-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="text-lg font-bold text-secondary flex items-center gap-2"><i class="fa-solid fa-file-text"></i> 你的专属天津旅游方案</h4>
+                        <button class="text-gray-500 hover:text-primary">
+                            <i class="fa-solid fa-download"></i> 保存方案
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-4 mb-4">
+                        <h5 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-sliders text-primary"></i> 出行配置</h5>
+                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-sm">
+                            <div class="bg-light p-2 rounded">
+                                <span class="text-gray-500">人数</span>
+                                <p id="resPeople" class="font-medium">2人</p>
+                            </div>
+                            <div class="bg-light p-2 rounded">
+                                <span class="text-gray-500">天数</span>
+                                <p id="resDays" class="font-medium">2日游</p>
+                            </div>
+                            <div class="bg-light p-2 rounded">
+                                <span class="text-gray-500">预算</span>
+                                <p id="resBudget" class="font-medium">人均500元</p>
+                            </div>
+                            <div class="bg-light p-2 rounded">
+                                <span class="text-gray-500">偏好</span>
+                                <p id="resLike" class="font-medium">景点打卡</p>
+                            </div>
+                            <div class="bg-light p-2 rounded">
+                                <span class="text-gray-500">交通</span>
+                                <p id="resWay" class="font-medium">公共交通</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="font-bold mb-3 flex items-center gap-1"><i class="fa-solid fa-route text-primary"></i> 行程推荐</h5>
+                        <div id="resTrip" class="space-y-3">
+                            <!-- 行程内容将由JS动态生成 -->
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="bg-white rounded-lg p-4">
+                            <h5 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-utensils text-primary"></i> 美食推荐</h5>
+                            <ul class="text-sm space-y-2">
+                                <li class="flex items-center gap-2">
+                                    <i class="fa-solid fa-circle text-xs text-primary"></i>
+                                    <span>早餐: 煎饼果子 (¥6/套)</span>
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <i class="fa-solid fa-circle text-xs text-primary"></i>
+                                    <span>午餐: 天津菜 (人均¥60)</span>
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <i class="fa-solid fa-circle text-xs text-primary"></i>
+                                    <span>晚餐: 小吃街 (人均¥40)</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h5 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-bed text-primary"></i> 住宿建议</h5>
+                            <div id="resHotel" class="text-sm">
+                                <!-- 住宿建议将由JS动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-4 mb-4">
+                        <h5 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-location-dot text-primary"></i> 交通指引</h5>
+                        <div id="resTraffic" class="text-sm">
+                            <!-- 交通指引将由JS动态生成 -->
+                        </div>
+                    </div>
+                    
+                    <div class="bg-primary/5 rounded-lg p-4 border-l-4 border-primary">
+                        <h5 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-lightbulb text-primary"></i> 智能提示</h5>
+                        <ul class="text-sm space-y-1">
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-circle-info text-primary mt-0.5"></i>
+                                <span>根据天气预报，建议携带防晒用品和雨伞</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-circle-info text-primary mt-0.5"></i>
+                                <span>周末景点人流量较大，建议提前规划行程</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-circle-info text-primary mt-0.5"></i>
+                                <span>天津地铁支持手机支付，无需排队购票</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="comments" class="mb-16">
+            <h3 class="title">用户真实评价</h3>
+            <p class="subtitle">来自旅行者的真实体验分享</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 评价卡片1 -->
+                <div class="card p-5">
+                    <div class="flex items-center mb-4">
+                        <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="用户头像" class="w-12 h-12 rounded-full object-cover mr-3">
+                        <div>
+                            <h4 class="font-bold">李小明</h4>
+                            <div class="flex items-center text-yellow-400 text-xs">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                            </div>
+                        </div>
+                        <div class="ml-auto text-xs text-gray-500">2026-03-18</div>
+                    </div>
+                    <p class="text-gray-700 mb-3">天津之眼真的很壮观，特别是晚上亮灯的时候，夜景太美了！推荐傍晚去，可以看到日落和夜景。攻略很准确，按照推荐路线玩得很开心。</p>
+                    <div class="flex gap-2 mb-3">
+                        <span class="tag">天津之眼</span>
+                        <span class="tag">夜景</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="text-gray-500 hover:text-primary text-sm flex items-center gap-1">
+                            <i class="fa-solid fa-thumbs-up"></i> 有用 (24)
+                        </button>
+                        <button class="text-gray-500 hover:text-primary text-sm flex items-center gap-1">
+                            <i class="fa-solid fa-comment"></i> 回复
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 评价卡片2 -->
+                <div class="card p-5">
+                    <div class="flex items-center mb-4">
+                        <img src="https://randomuser.me/api/portraits/men/45.jpg" alt="用户头像" class="w-12 h-12 rounded-full object-cover mr-3">
+                        <div>
+                            <h4 class="font-bold">王旅行</h4>
+                            <div class="flex items-center text-yellow-400 text-xs">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star-half-stroke"></i>
+                            </div>
+                        </div>
+                        <div class="ml-auto text-xs text-gray-500">2026-03-15</div>
+                    </div>
+                    <p class="text-gray-700 mb-3">五大道的欧式建筑很有特色，租了一辆自行车逛了一整天，很惬意。瓷房子确实很震撼，值得一看。美食推荐很靠谱，煎饼果子太好吃了！</p>
+                    <div class="flex gap-2 mb-3">
+                        <span class="tag">五大道</span>
+                        <span class="tag">瓷房子</span>
+                        <span class="tag">美食</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="text-gray-500 hover:text-primary text-sm flex items-center gap-1">
+                            <i class="fa-solid fa-thumbs-up"></i> 有用 (18)
+                        </button>
+                        <button class="text-gray-500 hover:text-primary text-sm flex items-center gap-1">
+                            <i class="fa-solid fa-comment"></i> 回复
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 评价卡片3 -->
+                <div class="card p-5">
+                    <div class="flex items-center mb-4">
+                        <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="用户头像" class="w-12 h-12 rounded-full object-cover mr-3">
+                        <div>
+                            <h4 class="font-bold">张小北</h4>
+                            <div class="flex items-center text-yellow-400 text-xs">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star text-gray-300"></i>
+                            </div>
+                        </div>
+                        <div class="ml-auto text-xs text-gray-500">2026-02-10</div>
+                    </div>
+                    <p class="text-gray-700 mb-3">AI定制的路线很合理，避开了人流高峰，节省了很多时间。住宿推荐的酒店位置很好，离地铁站很近。唯一遗憾是古文化街人太多了。</p>
+                    <div class="flex gap-2 mb-3">
+                        <span class="tag">AI路线</span>
+                        <span class="tag">住宿</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="text-gray-500 hover:text-primary text-sm flex items-center gap-1">
+                            <i class="fa-solid fa-thumbs-up"></i> 有用 (12)
+                        </button>
+                        <button class="text-gray-500 hover:text-primary text-sm flex items-center gap-1">
+                            <i class="fa-solid fa-comment"></i> 回复
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-8">
+                <button class="btn-primary">
+                    <i class="fa-solid fa-comments"></i> 查看更多评价
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8 text-center">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-center gap-2 mb-3">
+                <i class="fa-solid fa-city text-primary text-2xl"></i>
+                <h2 class="text-xl font-bold">津城智慧旅游</h2>
+            </div>
+            <p class="text-gray-400 text-sm mb-4">专注天津经济旅游攻略 | 免费个性化方案定制</p>
+            <div class="flex justify-center gap-4 mb-4">
+                <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                    <i class="fa-brands fa-weixin text-xl"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                    <i class="fa-brands fa-weibo text-xl"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                    <i class="fa-brands fa-qq text-xl"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                    <i class="fa-solid fa-envelope text-xl"></i>
+                </a>
+            </div>
+            <p class="text-gray-500 text-xs">© 2026 津城智慧旅游 版权所有</p>
+        </div>
+    </footer>
+
+    <!-- 地图模态框 -->
+    <div id="mapModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg w-full max-w-4xl h-[80vh] max-h-[600px] overflow-hidden">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-map-location-dot text-primary"></i>
+                    <span id="mapTitle">地图位置</span>
+                </h3>
+                <button id="closeMapBtn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="mapContainer" class="w-full h-[calc(100%-64px)]"></div>
+        </div>
+    </div>
+
+    <!-- 评论模态框 -->
+    <div id="commentsModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg w-full max-w-2xl h-[80vh] max-h-[600px] overflow-hidden">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-comments text-secondary"></i>
+                    <span id="commentsTitle">用户评价</span>
+                </h3>
+                <button id="closeCommentsBtn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-4 h-[calc(100%-128px)] overflow-y-auto" id="commentsContainer">
+                <!-- 评论内容将由JS动态生成 -->
+            </div>
+            <div class="p-4 border-t">
+                <div class="flex items-center gap-3 mb-3">
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="用户头像" class="w-10 h-10 rounded-full object-cover">
+                    <div class="flex-1">
+                        <div class="flex text-yellow-400 text-xs mb-1">
+                            <i class="fa-solid fa-star cursor-pointer"></i>
+                            <i class="fa-solid fa-star cursor-pointer"></i>
+                            <i class="fa-solid fa-star cursor-pointer"></i>
+                            <i class="fa-solid fa-star cursor-pointer"></i>
+                            <i class="fa-solid fa-star cursor-pointer"></i>
+                        </div>
+                        <textarea class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary/50 outline-none" rows="2" placeholder="分享你的体验..."></textarea>
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button class="bg-secondary hover:bg-secondary/90 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                        发表评价
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AR预览模态框 -->
+    <div id="arModal" class="fixed inset-0 bg-black z-50 hidden flex items-center justify-center p-4">
+        <div class="w-full h-full flex flex-col">
+            <div class="flex justify-end p-4">
+                <button id="closeArBtn" class="text-white hover:text-gray-300 bg-black/30 rounded-full p-2">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="flex-1 flex items-center justify-center">
+                <div id="arContainer" class="w-full h-full max-h-[70vh] relative">
+                    <!-- Three.js 3D内容将在这里渲染 -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="text-white text-center">
+                            <i class="fa-solid fa-spinner fa-spin text-4xl mb-3"></i>
+                            <p>加载中，请稍候...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-black/50 backdrop-blur-sm p-4 text-white">
+                <h3 id="arTitle" class="font-bold text-lg mb-2">AR景点预览</h3>
+                <p id="arDescription" class="text-sm text-gray-300">360°全景预览，拖动可旋转视角</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let map = null;
+        let currentARScene = null;
+        
+        // 景点数据
+        const attractions = [
+            {
+                id: "tianjin-eye",
+                name: "天津之眼",
+                type: "city",
+                coordinates: [117.1906, 39.1310],
+                description: "世界唯一建在桥上的摩天轮，天津地标性建筑，俯瞰津城全景绝佳位置",
+                weather: "晴 22°C",
+                arModel: "tianjin-eye-model",
+                arDescription: "天津之眼摩天轮，高120米，是世界上唯一建在桥上的摩天轮。您可以通过拖动鼠标或触摸屏幕来旋转视角，欣赏不同角度的景观。"
+            },
+            {
+                id: "wudadao",
+                name: "五大道",
+                type: "culture",
+                coordinates: [117.2131, 39.0846],
+                description: "保存最完整的洋楼建筑群，2000多栋欧式建筑，漫步感受民国风情",
+                weather: "多云 20°C",
+                arModel: "wudadao-model",
+                arDescription: "五大道是天津保存最完整的洋楼建筑群，拥有2000多栋欧式建筑。这里曾是民国时期达官贵人的聚居地，如今成为天津重要的文化旅游区。"
+            },
+            {
+                id: "guculture",
+                name: "古文化街",
+                type: "culture",
+                coordinates: [117.2161, 39.1218],
+                description: "津门十景之一，感受天津民俗文化，逛老字号、买非遗手工艺品",
+                weather: "晴 23°C",
+                arModel: "guculture-model",
+                arDescription: "古文化街是天津最具代表性的民俗文化街区，汇集了众多老字号店铺和非遗手工艺品。这里的建筑风格融合了北方传统民居和商业建筑特色。"
+            },
+            {
+                id: "italian",
+                name: "意式风情区",
+                type: "city",
+                coordinates: [117.2197, 39.1269],
+                description: "亚洲唯一意大利风格建筑群，网红打卡、拍照出片圣地",
+                weather: "晴 22°C",
+                arModel: "italian-model",
+                arDescription: "意式风情区是亚洲唯一的意大利风格建筑群，保存了大量原汁原味的意大利建筑。这里曾是意大利租界，如今成为天津的网红打卡地。"
+            },
+            {
+                id: "panshan",
+                name: "盘山",
+                type: "nature",
+                coordinates: [117.3474, 40.0506],
+                description: "京东第一山，自然风景与人文古迹结合，乾隆曾32次游历此地",
+                weather: "小雨 18°C",
+                arModel: "panshan-model",
+                arDescription: "盘山被誉为'京东第一山'，以其秀美的自然风光和丰富的人文古迹闻名。乾隆皇帝曾32次游历此地，并留下'早知有盘山，何必下江南'的诗句。"
+            },
+            {
+                id: "ceramic",
+                name: "瓷房子",
+                type: "city",
+                coordinates: [117.2183, 39.1198],
+                description: "用4亿片古瓷建造的法式洋楼，中国古瓷博物馆，独一无二的建筑奇观",
+                weather: "晴 22°C",
+                arModel: "ceramic-model",
+                arDescription: "瓷房子是一座用4亿片古瓷片装饰的法式洋楼，被誉为'中国古瓷博物馆'。这座建筑将中国传统陶瓷艺术与西方建筑风格完美融合，是天津独特的文化地标。"
+            }
+        ];
+
+        // 模拟评论数据
+        const commentsData = {
+            "tianjin-eye": [
+                {
+                    id: 1,
+                    userName: "李小明",
+                    userAvatar: "https://randomuser.me/api/portraits/women/32.jpg",
+                    rating: 5,
+                    content: "天津之眼真的很壮观，特别是晚上亮灯的时候，夜景太美了！推荐傍晚去，可以看到日落和夜景。",
+                    timestamp: "2025-04-18",
+                    likes: 24
+                },
+                {
+                    id: 2,
+                    userName: "张大山",
+                    userAvatar: "https://randomuser.me/api/portraits/men/45.jpg",
+                    rating: 4,
+                    content: "景色不错，就是人太多了，建议早点去排队。票价虽然有点贵，但值得体验一次。",
+                    timestamp: "2025-04-15",
+                    likes: 12
+                }
+            ],
+            "wudadao": [
+                {
+                    id: 3,
+                    userName: "王小美",
+                    userAvatar: "https://randomuser.me/api/portraits/women/68.jpg",
+                    rating: 5,
+                    content: "五大道的欧式建筑很有特色，租了一辆自行车逛了一整天，很惬意。春天来的话，路边的花开得很漂亮。",
+                    timestamp: "2025-04-10",
+                    likes: 18
+                }
+            ],
+            "guculture": [
+                {
+                    id: 4,
+                    userName: "刘旅行",
+                    userAvatar: "https://randomuser.me/api/portraits/men/32.jpg",
+                    rating: 4,
+                    content: "古文化街很有天津特色，可以买到很多手工艺品和特产。建议尝尝这里的小吃，特别是耳朵眼炸糕。",
+                    timestamp: "2025-04-08",
+                    likes: 15
+                }
+            ],
+            "italian": [
+                {
+                    id: 5,
+                    userName: "陈摄影",
+                    userAvatar: "https://randomuser.me/api/portraits/men/55.jpg",
+                    rating: 5,
+                    content: "意式风情区是摄影爱好者的天堂，建筑风格独特，随便一拍都是大片。晚上灯光亮起时更美。",
+                    timestamp: "2025-04-05",
+                    likes: 22
+                }
+            ],
+            "panshan": [
+                {
+                    id: 6,
+                    userName: "林户外",
+                    userAvatar: "https://randomuser.me/api/portraits/women/42.jpg",
+                    rating: 5,
+                    content: "盘山风景秀丽，空气清新，是远离城市喧嚣的好去处。建议穿舒适的鞋子，带足饮用水。",
+                    timestamp: "2025-04-01",
+                    likes: 19
+                }
+            ],
+            "ceramic": [
+                {
+                    id: 7,
+                    userName: "赵艺术",
+                    userAvatar: "https://randomuser.me/api/portraits/men/63.jpg",
+                    rating: 4,
+                    content: "瓷房子很有创意，用古瓷片装饰的建筑很震撼。门票有点贵，但对于喜欢艺术的人来说值得一看。",
+                    timestamp: "2025-03-28",
+                    likes: 16
+                }
+            ]
+        };
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化移动端菜单
+            initMobileMenu();
+            
+            // 初始化景点筛选
+            initAttractionFilter();
+            
+            // 初始化地图模态框
+            initMapModal();
+            
+            // 初始化评论模态框
+            initCommentsModal();
+            
+            // 初始化AR预览模态框
+            initArModal();
+            
+            // 初始化AI定制表单
+            initCustomForm();
+            
+            // 初始化天气信息
+            initWeatherInfo();
+            
+            // 初始化当前日期
+            initCurrentDate();
+        });
+
+        // 初始化移动端菜单
+        function initMobileMenu() {
+            const menuBtn = document.getElementById('menuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileLinks = document.querySelectorAll('.mobile-link');
+            
+            menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+            mobileLinks.forEach(link => link.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+        }
+
+        // 初始化景点筛选
+        function initAttractionFilter() {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const attractionCards = document.querySelectorAll('.attraction-card');
+            
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // 移除所有按钮的active状态
+                    filterBtns.forEach(b => {
+                        b.classList.remove('active', 'bg-primary', 'text-white');
+                        b.classList.add('bg-white', 'text-gray-700');
+                    });
+                    
+                    // 添加当前按钮的active状态
+                    btn.classList.add('active', 'bg-primary', 'text-white');
+                    btn.classList.remove('bg-white', 'text-gray-700');
+                    
+                    const filter = btn.getAttribute('data-filter');
+                    
+                    // 筛选景点卡片
+                    attractionCards.forEach(card => {
+                        if (filter === 'all' || card.getAttribute('data-category') === filter) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        }
+
+        // 初始化地图模态框
+        function initMapModal() {
+            const mapModal = document.getElementById('mapModal');
+            const closeMapBtn = document.getElementById('closeMapBtn');
+            const viewMapBtns = document.querySelectorAll('.view-map-btn');
+            const mapTitle = document.getElementById('mapTitle');
+            
+            // 关闭模态框
+            closeMapBtn.addEventListener('click', () => {
+                mapModal.classList.add('hidden');
+                if (map) {
+                    map.destroy();
+                    map = null;
+                }
+            });
+            
+            // 点击地图按钮
+            viewMapBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const lat = parseFloat(btn.getAttribute('data-lat'));
+                    const lng = parseFloat(btn.getAttribute('data-lng'));
+                    const name = btn.getAttribute('data-name');
+                    
+                    mapTitle.textContent = name;
+                    mapModal.classList.remove('hidden');
+                    
+                    // 初始化地图
+                    setTimeout(() => {
+                        initMap(lng, lat, name);
+                    }, 100);
+                });
+            });
+        }
+
+        // 初始化地图
+        function initMap(lng, lat, name) {
+            // 检查是否已经初始化地图
+            if (map) {
+                map.destroy();
+            }
+            
+            // 创建地图实例
+            map = new AMap.Map('mapContainer', {
+                zoom: 15,
+                center: [lng, lat]
+            });
+            
+            // 添加标记
+            const marker = new AMap.Marker({
+                position: [lng, lat],
+                title: name
+            });
+            
+            map.add(marker);
+            
+            // 添加信息窗口
+            const infoWindow = new AMap.InfoWindow({
+                content: `<div style="padding:10px;">${name}</div>`,
+                offset: new AMap.Pixel(0, -30)
+            });
+            
+            infoWindow.open(map, [lng, lat]);
+            
+            // 添加控件
+            map.addControl(new AMap.ToolBar());
+            map.addControl(new AMap.Scale());
+        }
+
+        // 初始化评论模态框
+        function initCommentsModal() {
+            const commentsModal = document.getElementById('commentsModal');
+            const closeCommentsBtn = document.getElementById('closeCommentsBtn');
+            const viewCommentsBtns = document.querySelectorAll('.view-comments-btn');
+            const commentsTitle = document.getElementById('commentsTitle');
+            const commentsContainer = document.getElementById('commentsContainer');
+            
+            // 关闭模态框
+            closeCommentsBtn.addEventListener('click', () => {
+                commentsModal.classList.add('hidden');
+            });
+            
+            // 点击评论按钮
+            viewCommentsBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const attractionId = btn.getAttribute('data-attraction');
+                    const attraction = attractions.find(a => a.id === attractionId);
+                    
+                    if (attraction) {
+                        commentsTitle.textContent = `${attraction.name} - 用户评价`;
+                        
+                        // 加载评论
+                        loadComments(attractionId, commentsContainer);
+                        
+                        commentsModal.classList.remove('hidden');
+                    }
+                });
+            });
+        }
+
+        // 加载评论
+        function loadComments(attractionId, container) {
+            const comments = commentsData[attractionId] || [];
+            
+            if (comments.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fa-solid fa-comment-slash text-gray-300 text-4xl mb-3"></i>
+                        <p class="text-gray-500">暂无评价，成为第一个评价的人吧！</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = comments.map(comment => `
+                <div class="border-b pb-4 mb-4">
+                    <div class="flex items-center mb-3">
+                        <img src="${comment.userAvatar}" alt="${comment.userName}" class="w-10 h-10 rounded-full object-cover mr-3">
+                        <div>
+                            <h4 class="font-bold text-sm">${comment.userName}</h4>
+                            <div class="flex items-center text-yellow-400 text-xs">
+                                ${Array(5).fill(0).map((_, i) => 
+                                    `<i class="fa-solid fa-star ${i >= comment.rating ? 'text-gray-300' : ''}"></i>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        <div class="ml-auto text-xs text-gray-500">${comment.timestamp}</div>
+                    </div>
+                    <p class="text-gray-700 text-sm mb-2">${comment.content}</p>
+                    <div class="flex gap-3">
+                        <button class="text-gray-500 hover:text-primary text-xs flex items-center gap-1">
+                            <i class="fa-solid fa-thumbs-up"></i> 有用 (${comment.likes})
+                        </button>
+                        <button class="text-gray-500 hover:text-primary text-xs flex items-center gap-1">
+                            <i class="fa-solid fa-comment"></i> 回复
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 初始化AR预览模态框
+        function initArModal() {
+            const arModal = document.getElementById('arModal');
+            const closeArBtn = document.getElementById('closeArBtn');
+            const arPreviewBtns = document.querySelectorAll('.ar-preview-btn');
+            const arTitle = document.getElementById('arTitle');
+            const arDescription = document.getElementById('arDescription');
+            
+            // 关闭模态框
+            closeArBtn.addEventListener('click', () => {
+                arModal.classList.add('hidden');
+                cleanupARScene();
+            });
+            
+            // 点击AR预览按钮
+            arPreviewBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const attractionId = btn.getAttribute('data-attraction');
+                    const attraction = attractions.find(a => a.id === attractionId);
+                    
+                    if (attraction) {
+                        arTitle.textContent = attraction.name;
+                        arDescription.textContent = attraction.arDescription;
+                        
+                        arModal.classList.remove('hidden');
+                        
+                        // 初始化AR场景
+                        setTimeout(() => {
+                            initARScene(attractionId);
+                        }, 100);
+                    }
+                });
+            });
+        }
+
+        // 初始化AR场景
+        function initARScene(attractionId) {
+            cleanupARScene();
+            
+            const container = document.getElementById('arContainer');
+            
+            // 创建场景
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+            
+            // 创建相机
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.z = 5;
+            
+            // 创建渲染器
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            
+            // 清除加载提示
+            container.innerHTML = '';
+            container.appendChild(renderer.domElement);
+            
+            // 添加控制器
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            
+            // 根据景点创建不同的3D模型
+            createAttractionModel(scene, attractionId);
+            
+            // 添加环境光
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            
+            // 添加方向光
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(1, 1, 1);
+            scene.add(directionalLight);
+            
+            // 动画循环
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            // 保存当前场景
+            currentARScene = {
+                scene,
+                camera,
+                renderer,
+                controls,
+                container
+            };
+            
+            // 窗口大小调整
+            window.addEventListener('resize', onWindowResize);
+            
+            function onWindowResize() {
+                if (!currentARScene) return;
+                
+                currentARScene.camera.aspect = currentARScene.container.clientWidth / currentARScene.container.clientHeight;
+                currentARScene.camera.updateProjectionMatrix();
+                currentARScene.renderer.setSize(currentARScene.container.clientWidth, currentARScene.container.clientHeight);
+            }
+        }
+
+        // 创建景点3D模型
+        function createAttractionModel(scene, attractionId) {
+            // 根据不同景点创建不同的3D模型
+            switch (attractionId) {
+                case 'tianjin-eye':
+                    createFerrisWheel(scene);
+                    break;
+                case 'wudadao':
+                    createEuropeanBuildings(scene);
+                    break;
+                case 'guculture':
+                    createTraditionalStreet(scene);
+                    break;
+                case 'italian':
+                    createItalianPlaza(scene);
+                    break;
+                case 'panshan':
+                    createMountain(scene);
+                    break;
+                case 'ceramic':
+                    createCeramicHouse(scene);
+                    break;
+                default:
+                    createDefaultModel(scene);
+            }
+        }
+
+        // 创建摩天轮模型
+        function createFerrisWheel(scene) {
+            // 创建摩天轮底座
+            const baseGeometry = new THREE.CylinderGeometry(0.5, 0.8, 1, 32);
+            const baseMaterial = new THREE.MeshPhongMaterial({ color: 0x165DFF });
+            const base = new THREE.Mesh(baseGeometry, baseMaterial);
+            scene.add(base);
+            
+            // 创建摩天轮轮子
+            const wheelGeometry = new THREE.TorusGeometry(3, 0.2, 16, 100);
+            const wheelMaterial = new THREE.MeshPhongMaterial({ color: 0xFF6B35 });
+            const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+            wheel.rotation.x = Math.PI / 2;
+            scene.add(wheel);
+            
+            // 添加座舱
+            for (let i = 0; i < 12; i++) {
+                const angle = (i / 12) * Math.PI * 2;
+                const x = Math.cos(angle) * 3;
+                const z = Math.sin(angle) * 3;
+                
+                const cabinGeometry = new THREE.BoxGeometry(0.4, 0.6, 0.4);
+                const cabinMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFFFF });
+                const cabin = new THREE.Mesh(cabinGeometry, cabinMaterial);
+                cabin.position.set(x, 0, z);
+                scene.add(cabin);
+                
+                // 添加连接臂
+                const armGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.2, 8);
+                const armMaterial = new THREE.MeshPhongMaterial({ color: 0x333333 });
+                
+                const arm1 = new THREE.Mesh(armGeometry, armMaterial);
+                arm1.position.set(x * 0.5, 0, z * 0.5);
+                arm1.lookAt(x, 0, z);
+                arm1.rotation.z = Math.PI / 2;
+                scene.add(arm1);
+            }
+        }
+
+        // 创建欧式建筑群
+        function createEuropeanBuildings(scene) {
+            // 创建多个欧式建筑
+            const buildingColors = [0xFFFFFF, 0xF0F0F0, 0xE0E0E0];
+            
+            for (let i = 0; i < 5; i++) {
+                const x = (Math.random() - 0.5) * 8;
+                const z = (Math.random() - 0.5) * 8;
+                const height = 1 + Math.random() * 2;
+                
+                const buildingGeometry = new THREE.BoxGeometry(1, height, 1);
+                const buildingMaterial = new THREE.MeshPhongMaterial({ 
+                    color: buildingColors[Math.floor(Math.random() * buildingColors.length)],
+                    flatShading: true
+                });
+                const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+                building.position.set(x, height / 2, z);
+                scene.add(building);
+                
+                // 添加屋顶
+                const roofGeometry = new THREE.ConeGeometry(0.7, 0.5, 4);
+                const roofMaterial = new THREE.MeshPhongMaterial({ color: 0x8B4513 });
+                const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+                roof.position.set(x, height + 0.25, z);
+                roof.rotation.y = Math.random() * Math.PI;
+                scene.add(roof);
+            }
+            
+            // 添加地面
+            const groundGeometry = new THREE.PlaneGeometry(20, 20);
+            const groundMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x7CFC00,
+                side: THREE.DoubleSide
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = Math.PI / 2;
+            ground.position.y = -0.1;
+            scene.add(ground);
+        }
+
+        // 创建传统街道
+        function createTraditionalStreet(scene) {
+            // 添加地面
+            const groundGeometry = new THREE.PlaneGeometry(20, 10);
+            const groundMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x8B4513,
+                side: THREE.DoubleSide
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = Math.PI / 2;
+            ground.position.y = -0.1;
+            scene.add(ground);
+            
+            // 创建传统建筑
+            for (let i = 0; i < 8; i++) {
+                const x = -8 + i * 2.5;
+                
+                // 左侧建筑
+                const building1Geometry = new THREE.BoxGeometry(1.5, 2, 2);
+                const building1Material = new THREE.MeshPhongMaterial({ color: 0xDC143C });
+                const building1 = new THREE.Mesh(building1Geometry, building1Material);
+                building1.position.set(x, 1, -2);
+                scene.add(building1);
+                
+                // 添加屋顶
+                const roof1Geometry = new THREE.BoxGeometry(1.8, 0.3, 2.3);
+                const roof1Material = new THREE.MeshPhongMaterial({ color: 0x8B4513 });
+                const roof1 = new THREE.Mesh(roof1Geometry, roof1Material);
+                roof1.position.set(x, 2.15, -2);
+                scene.add(roof1);
+                
+                // 右侧建筑
+                const building2Geometry = new THREE.BoxGeometry(1.5, 1.8, 2);
+                const building2Material = new THREE.MeshPhongMaterial({ color: 0x4169E1 });
+                const building2 = new THREE.Mesh(building2Geometry, building2Material);
+                building2.position.set(x, 0.9, 2);
+                scene.add(building2);
+                
+                // 添加屋顶
+                const roof2Geometry = new THREE.BoxGeometry(1.8, 0.3, 2.3);
+                const roof2Material = new THREE.MeshPhongMaterial({ color: 0x8B4513 });
+                const roof2 = new THREE.Mesh(roof2Geometry, roof2Material);
+                roof2.position.set(x, 2.05, 2);
+                scene.add(roof2);
+            }
+        }
+
+        // 创建意大利广场
+        function createItalianPlaza(scene) {
+            // 添加广场地面
+            const groundGeometry = new THREE.CircleGeometry(10, 32);
+            const groundMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xF5F5DC,
+                side: THREE.DoubleSide
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = Math.PI / 2;
+            ground.position.y = -0.1;
+            scene.add(ground);
+            
+            // 创建意大利风格建筑
+            const buildingColors = [0xF08080, 0x87CEFA, 0x98FB98, 0xFFB6C1];
+            
+            for (let i = 0; i < 6; i++) {
+                const angle = (i / 6) * Math.PI * 2;
+                const radius = 7;
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+                
+                const buildingGeometry = new THREE.BoxGeometry(3, 2.5, 3);
+                const buildingMaterial = new THREE.MeshPhongMaterial({ 
+                    color: buildingColors[i % buildingColors.length],
+                    flatShading: true
+                });
+                const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+                building.position.set(x, 1.25, z);
+                building.lookAt(0, 1.25, 0);
+                scene.add(building);
+                
+                // 添加屋顶
+                const roofGeometry = new THREE.ConeGeometry(1.8, 0.8, 4);
+                const roofMaterial = new THREE.MeshPhongMaterial({ color: 0x8B4513 });
+                const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+                roof.position.set(x, 2.65, z);
+                roof.lookAt(0, 2.65, 0);
+                scene.add(roof);
+            }
+            
+            // 添加中心喷泉
+            const fountainBaseGeometry = new THREE.CylinderGeometry(1, 1.5, 0.5, 32);
+            const fountainBaseMaterial = new THREE.MeshPhongMaterial({ color: 0xC0C0C0 });
+            const fountainBase = new THREE.Mesh(fountainBaseGeometry, fountainBaseMaterial);
+            fountainBase.position.set(0, 0.25, 0);
+            scene.add(fountainBase);
+            
+            const fountainGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 32);
+            const fountainMaterial = new THREE.MeshPhongMaterial({ color: 0x87CEFA });
+            const fountain = new THREE.Mesh(fountainGeometry, fountainMaterial);
+            fountain.position.set(0, 1, 0);
+            scene.add(fountain);
+            
+            // 添加水花效果
+            const waterGeometry = new THREE.ConeGeometry(0.3, 0.8, 16);
+            const waterMaterial = new THREE.MeshPhongMaterial({ color: 0x87CEFA, transparent: true, opacity: 0.7 });
+            const water = new THREE.Mesh(waterGeometry, waterMaterial);
+            water.position.set(0, 1.9, 0);
+            scene.add(water);
+        }
+
+        // 创建山峰
+        function createMountain(scene) {
+            // 创建山体
+            const mountainGeometry = new THREE.ConeGeometry(5, 8, 32);
+            const mountainMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x228B22,
+                flatShading: true
+            });
+            const mountain = new THREE.Mesh(mountainGeometry, mountainMaterial);
+            mountain.position.set(0, 3, 0);
+            scene.add(mountain);
+            
+            // 添加山顶积雪
+            const snowGeometry = new THREE.ConeGeometry(2, 3, 32);
+            const snowMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFFFF });
+            const snow = new THREE.Mesh(snowGeometry, snowMaterial);
+            snow.position.set(0, 8, 0);
+            scene.add(snow);
+            
+            // 添加树木
+            for (let i = 0; i < 50; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * 4 + 1;
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+                const height = 0.3 + Math.random() * 0.5;
+                
+                const treeGeometry = new THREE.ConeGeometry(0.2, height, 8);
+                const treeMaterial = new THREE.MeshPhongMaterial({ color: 0x006400 });
+                const tree = new THREE.Mesh(treeGeometry, treeMaterial);
+                
+                const y = mountainGeometry.parameters.height * (1 - radius / 5) + height / 2;
+                tree.position.set(x, y, z);
+                scene.add(tree);
+            }
+            
+            // 添加寺庙
+            const templeGeometry = new THREE.BoxGeometry(0.8, 0.6, 0.8);
+            const templeMaterial = new THREE.MeshPhongMaterial({ color: 0xDC143C });
+            const temple = new THREE.Mesh(templeGeometry, templeMaterial);
+            temple.position.set(1, 5, 1);
+            scene.add(temple);
+            
+            // 添加寺庙屋顶
+            const templeRoofGeometry = new THREE.BoxGeometry(1, 0.3, 1);
+            const templeRoofMaterial = new THREE.MeshPhongMaterial({ color: 0xFFD700 });
+            const templeRoof = new THREE.Mesh(templeRoofGeometry, templeRoofMaterial);
+            templeRoof.position.set(1, 5.6, 1);
+            scene.add(templeRoof);
+        }
+
+        // 创建瓷房子
+        function createCeramicHouse(scene) {
+            // 创建房子主体
+            const houseGeometry = new THREE.BoxGeometry(4, 3, 3);
+            const houseMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xFF69B4,
+                shininess: 100,
+                specular: 0xFFFFFF
+            });
+            const house = new THREE.Mesh(houseGeometry, houseMaterial);
+            house.position.set(0, 1.5, 0);
+            scene.add(house);
+            
+            // 添加屋顶
+            const roofGeometry = new THREE.PyramidGeometry(4.5, 1.5, 4);
+            const roofMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xFFD700,
+                shininess: 100,
+                specular: 0xFFFFFF
+            });
+            const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+            roof.position.set(0, 3.75, 0);
+            scene.add(roof);
+            
+            // 添加装饰瓷片效果
+            for (let i = 0; i < 200; i++) {
+                const size = 0.1 + Math.random() * 0.2;
+                const tileGeometry = new THREE.PlaneGeometry(size, size);
+                const tileMaterial = new THREE.MeshPhongMaterial({ 
+                    color: new THREE.Color(
+                        Math.random(),
+                        Math.random(),
+                        Math.random()
+                    ),
+                    shininess: 100,
+                    specular: 0xFFFFFF,
+                    side: THREE.DoubleSide
+                });
+                const tile = new THREE.Mesh(tileGeometry, tileMaterial);
+                
+                // 随机位置
+                const x = (Math.random() - 0.5) * houseGeometry.parameters.width;
+                const y = (Math.random() - 0.5) * houseGeometry.parameters.height + houseGeometry.parameters.height / 2;
+                const z = (Math.random() - 0.5) * houseGeometry.parameters.depth + 0.01;
+                
+                tile.position.set(x, y, z);
+                tile.rotation.y = Math.random() * Math.PI;
+                
+                scene.add(tile);
+            }
+            
+            // 添加门窗
+            const doorGeometry = new THREE.PlaneGeometry(1, 1.5);
+            const doorMaterial = new THREE.MeshPhongMaterial({ color: 0x8B4513, side: THREE.DoubleSide });
+            const door = new THREE.Mesh(doorGeometry, doorMaterial);
+            door.position.set(0, 0.75, 1.51);
+            scene.add(door);
+            
+            const windowGeometry = new THREE.PlaneGeometry(0.8, 0.8);
+            const windowMaterial = new THREE.MeshPhongMaterial({ color: 0x87CEEB, side: THREE.DoubleSide });
+            
+            const window1 = new THREE.Mesh(windowGeometry, windowMaterial);
+            window1.position.set(-1.5, 2, 1.51);
+            scene.add(window1);
+            
+            const window2 = new THREE.Mesh(windowGeometry, windowMaterial);
+            window2.position.set(1.5, 2, 1.51);
+            scene.add(window2);
+        }
+
+        // 创建默认模型
+        function createDefaultModel(scene) {
+            const geometry = new THREE.TorusKnotGeometry(1.5, 0.5, 100, 16);
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0x165DFF,
+                shininess: 100,
+                specular: 0xFFFFFF
+            });
+            const torusKnot = new THREE.Mesh(geometry, material);
+            scene.add(torusKnot);
+            
+            // 添加旋转动画
+            function animate() {
+                requestAnimationFrame(animate);
+                torusKnot.rotation.x += 0.01;
+                torusKnot.rotation.y += 0.01;
+            }
+            animate();
+        }
+
+        // 清理AR场景
+        function cleanupARScene() {
+            if (currentARScene) {
+                // 移除事件监听器
+                window.removeEventListener('resize', onWindowResize);
+                
+                // 清理渲染器
+                if (currentARScene.renderer && currentARScene.container) {
+                    currentARScene.container.removeChild(currentARScene.renderer.domElement);
+                }
+                
+                // 清理控制器
+                if (currentARScene.controls) {
+                    currentARScene.controls.dispose();
+                }
+                
+                // 清理渲染器
+                if (currentARScene.renderer) {
+                    currentARScene.renderer.dispose();
+                }
+                
+                // 清理场景中的所有对象
+                if (currentARScene.scene) {
+                    while(currentARScene.scene.children.length > 0) { 
+                        const object = currentARScene.scene.children[0];
+                        if (object.geometry) object.geometry.dispose();
+                        if (object.material) {
+                            if (Array.isArray(object.material)) {
+                                object.material.forEach(material => material.dispose());
+                            } else {
+                                object.material.dispose();
+                            }
+                        }
+                        currentARScene.scene.remove(object);
+                    }
+                }
+                
+                currentARScene = null;
+            }
+        }
+
+        // 初始化AI定制表单
+        function initCustomForm() {
+            const customForm = document.getElementById('customForm');
+            const planResult = document.getElementById('planResult');
+            
+            customForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const [people, days, budget, like, way] = [
+                    document.getElementById('people').value,
+                    document.getElementById('days').value,
+                    document.getElementById('budget').value,
+                    document.getElementById('like').value,
+                    document.getElementById('way').value
+                ];
+
+                document.getElementById('resPeople').textContent = people;
+                document.getElementById('resDays').textContent = days;
+                document.getElementById('resBudget').textContent = `人均${budget}`;
+                document.getElementById('resLike').textContent = like;
+                document.getElementById('resWay').textContent = way;
+
+                // 生成行程推荐
+                generateTripRecommendation(days, like, budget);
+                
+                const hotelText = budget === '200元以内' ? '推荐入住经济型青年旅舍，人均50-90元，位于南市或滨江道区域，交通便利。' :
+                                 budget === '200-500元' ? '推荐入住连锁快捷酒店，人均100-180元，位于和平路或天津站附近，设施齐全。' : 
+                                 '推荐入住品质舒适酒店，人均180-300元，位于五大道或小白楼区域，环境优雅。';
+                
+                const trafficText = way.includes('公共交通') ? '天津地铁网络发达，覆盖所有主要景点，建议购买一日票(¥15)或三日票(¥40)，可无限次乘坐地铁和公交。' :
+                                   way.includes('骑行') ? '天津共享单车普及，建议使用美团或哈啰单车，日租费用约¥20-30，注意遵守交通规则。' : 
+                                   way.includes('自驾') ? '自驾建议使用高德地图导航，市区部分路段有限行，景点附近停车场收费约¥10-20/小时。' :
+                                   '打车起步价¥11(3公里)，超出部分每公里¥2.2，建议使用滴滴出行APP，价格透明。';
+
+                document.getElementById('resHotel').textContent = hotelText;
+                document.getElementById('resTraffic').textContent = trafficText;
+
+                planResult.classList.remove('hidden');
+                planResult.scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+
+        // 生成行程推荐
+        function generateTripRecommendation(days, like, budget) {
+            const resTrip = document.getElementById('resTrip');
+            
+            let tripHTML = '';
+            
+            if (days === '1日游') {
+                if (like === '景点打卡') {
+                    tripHTML = `
+                        <div class="bg-white rounded-lg p-4 mb-3">
+                            <h6 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-sun text-yellow-500"></i> 上午 (09:00-12:00)</h6>
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="bg-primary/10 w-8 h-8 rounded-full flex items-center justify-center text-primary font-bold text-sm">1</div>
+                                <div>
+                                    <p class="font-medium">天津之眼</p>
+                                    <p class="text-xs text-gray-600">建议游玩2小时，早上人流较少</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 mb-3">
+                            <h6 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-utensils text-orange-500"></i> 午餐 (12:00-13:30)</h6>
+                            <div class="flex items-center gap-3">
+                                <div class="bg-primary/10 w-8 h-8 rounded-full flex items-center justify-center text-primary font-bold text-sm">2</div>
+                                <div>
+                                    <p class="font-medium">古文化街美食</p>
+                                    <p class="text-xs text-gray-600">品尝天津特色小吃，人均¥30-50</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 mb-3">
+                            <h6 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-tree text-green-500"></i> 下午 (13:30-17:30)</h6>
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="bg-primary/10 w-8 h-8 rounded-full flex items-center justify-center text-primary font-bold text-sm">3</div>
+                                <div>
+                                    <p class="font-medium">古文化街 → 意式风情区</p>
+                                    <p class="text-xs text-gray-600">游览文化街区，购买特色纪念品</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h6 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-moon text-blue-500"></i> 晚上 (17:30-20:30)</h6>
+                            <div class="flex items-center gap-3">
+                                <div class="bg-primary/10 w-8 h-8 rounded-full flex items-center justify-center text-primary font-bold text-sm">4</div>
+                                <div>
+                                    <p class="font-medium">五大道夜景</p>
+                                    <p class="text-xs text-gray-600">漫步欧式建筑群，感受夜天津魅力</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else if (like === '美食探店') {
+                    tripHTML = `
+                        <div class="bg-white rounded-lg p-4 mb-3">
+                            <h6 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-sun text-yellow-500"></i> 上午 (09:00-11:00)</h6>
+                            <div class="flex items-center gap-3">
+                                <div class="bg-primary/10 w-8 h-8 rounded-full flex items-center justify-center text-primary font-bold text-sm">1</div>
+                                <div>
+                                    <p class="font-medium">传统早餐体验</p>
+                                    <p class="text-xs text-gray-600">品尝煎饼果子、嘎巴菜等天津特色早餐</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 mb-3">
+                            <h6 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-utensils text-orange-500"></i> 午餐 (12:00-14:00)</h6>
+                            <div class="flex items-center gap-3">
+                                <div class="bg-primary/10 w-8 h-8 rounded-full flex items-center justify-center text-primary font-bold text-sm">2</div>
+                                <div>
+                                    <p class="font-medium">南市食品街</p>
+                                    <p class="text-xs text-gray-600">天津传统美食聚集地，尝遍津门特色</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 mb-3">
+                            <h6 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-tree text-green-500"></i> 下午 (14:30-16:30)</h6>
+                            <div class="flex items-center gap-3">
+                                <div class="bg-primary/10 w-8 h-8 rounded-full flex items-center justify-center text-primary font-bold text-sm">3</div>
+                                <div>
+                                    <p class="font-medium">天津之眼</p>
+                                    <p class="text-xs text-gray-600">游览天津地标，俯瞰城市全景</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h6 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-moon text-blue-500"></i> 晚上 (18:00-21:00)</h6>
+                            <div class="flex items-center gap-3">
+                                <div class="bg-primary/10 w-8 h-8 rounded-full flex items-center justify-center text-primary font-bold text-sm">4</div>
+                                <div>
+                                    <p class="font-medium">辽宁路小吃街</p>
+                                    <p class="text-xs text-gray-600">体验天津夜市文化，品尝各种小吃</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } else if (days === '2日游') {
+                tripHTML = `
+                    <div class="mb-4">
+                        <h6 class="font-bold mb-3 flex items-center gap-1"><i class="fa-solid fa-calendar-day text-primary"></i> 第一天</h6>
+                        <div class="bg-white rounded-lg p-4 mb-3">
+                            <h6 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-sun text-yellow-500"></i> 上午</h6>
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="bg-primary/10 w-8 h-8 rounded-full flex items-center justify-center text-primary font-bold text-sm">1</div>
+                                <div>
+                                    <p class="font-medium">天津之眼</p>
+                                    <p class="text-xs text-gray-600">建议游玩2小时，早上人流较少</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 mb-3">
+                            <h6 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-utensils text-orange-500"></i> 午餐</h6>
+                            <div class="flex items-center gap-3">
+                                <div class="bg-primary/10 w-8 h-8 rounded-full flex items-center justify-center text-primary font-bold text-sm">2</div>
+                                <div>
+                                    <p class="font-medium">古文化街美食</p>
+                                    <p class="text-xs text-gray-600">品尝天津特色小吃，人均¥30-50</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h6 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-moon text-blue-500"></i> 下午-晚上</h6>
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="bg-primary/10 w-8 h-8 rounded-full flex items-center justify-center text-primary font-bold text-sm">3</div>
+                                <div>
+                                    <p class="font-medium">古文化街 → 意式风情区</p>
+                                    <p class="text-xs text-gray-600">游览文化街区，晚上欣赏夜景</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h6 class="font-bold mb-3 flex items-center gap-1"><i class="fa-solid fa-calendar-day text-primary"></i> 第二天</h6>
+                        <div class="bg-white rounded-lg p-4 mb-3">
+                            <h6 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-sun text-yellow-500"></i> 上午</h6>
+                            <div class="flex items-center gap-3">
+                                <div class="bg-primary/10 w-8 h-8 rounded-full flex items-center justify-center text-primary font-bold text-sm">1</div>
+                                <div>
+                                    <p class="font-medium">五大道</p>
+                                    <p class="text-xs text-gray-600">建议租自行车游览，感受欧式风情</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 mb-3">
+                            <h6 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-utensils text-orange-500"></i> 午餐</h6>
+                            <div class="flex items-center gap-3">
+                                <div class="bg-primary/10 w-8 h-8 rounded-full flex items-center justify-center text-primary font-bold text-sm">2</div>
+                                <div>
+                                    <p class="font-medium">滨江道商业街</p>
+                                    <p class="text-xs text-gray-600">购物、美食一站式体验，人均¥60-80</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h6 class="font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-tree text-green-500"></i> 下午</h6>
+                            <div class="flex items-center gap-3">
+                                <div class="bg-primary/10 w-8 h-8 rounded-full flex items-center justify-center text-primary font-bold text-sm">3</div>
+                                <div>
+                                    <p class="font-medium">瓷房子 → 返程</p>
+                                    <p class="text-xs text-gray-600">参观瓷房子博物馆，购买纪念品</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                tripHTML = `
+                    <div class="bg-white rounded-lg p-4 mb-3">
+                        <p class="text-center text-gray-700">
+                            您选择了${days}，我们的AI助手将为您生成更详细的行程安排。
+                            <br>请点击下方按钮获取完整行程。
+                        </p>
+                        <div class="flex justify-center mt-4">
+                            <button class="btn-primary text-sm">
+                                <i class="fa-solid fa-download"></i> 获取完整行程PDF
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            resTrip.innerHTML = tripHTML;
+        }
+
+        // 初始化天气信息
+        function initWeatherInfo() {
+            // 这里使用模拟数据，实际应用中应调用天气API
+            const weatherData = {
+                "tianjin-eye": "晴 22°C",
+                "wudadao": "多云 20°C",
+                "guculture": "晴 23°C",
+                "italian": "晴 22°C",
+                "panshan": "小雨 18°C",
+                "ceramic": "晴 22°C"
+            };
+            
+            // 更新顶部天气栏
+            document.getElementById('weatherInfo').textContent = "天津 晴 22°C";
+            document.getElementById('weatherBar').classList.remove('hidden');
+            
+            // 更新各景点天气
+            for (const [id, weather] of Object.entries(weatherData)) {
+                const element = document.getElementById(`weather-${id}`);
+                if (element) {
+                    element.textContent = weather;
+                }
+            }
+        }
+
+        // 初始化当前日期
+        function initCurrentDate() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('zh-CN', options);
+        }
+    </script>
+
+</body></html>
